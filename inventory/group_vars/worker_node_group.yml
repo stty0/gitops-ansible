@@ -1,0 +1,19 @@
+slurm_packages:
+  - slurm-smd_24.11.0-0rc2_amd64.deb
+  - slurm-smd-libpmi0_24.11.0-0rc2_amd64.deb
+  - slurm-smd-dev_24.11.0-0rc2_amd64.deb
+  - slurm-smd-libpmi2-0_24.11.0-0rc2_amd64.deb
+  - slurm-smd-libnss-slurm_24.11.0-0rc2_amd64.deb
+  - slurm-smd-slurmd_24.11.0-0rc2_amd64.deb
+  - slurm-smd-libpam-slurm-adopt_24.11.0-0rc2_amd64.deb
+
+slurm_directories:
+  - "{{ slurm_spool_dir.path }}"
+  - "{{ slurm_log_dir.path }}"
+
+slurm_daemons: [
+  {
+    name: slurmd,
+    port: 6818
+  }
+]

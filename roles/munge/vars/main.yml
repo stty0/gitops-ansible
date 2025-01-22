@@ -1,0 +1,14 @@
+---
+# vars file for munge
+OS_user: {
+  group: munge,
+  user: munge,
+  home_dir: /var/lib/munge,
+  shell: /sbin/nologin,
+  uid: 991,
+  gid: 991
+}
+
+munge_packages:
+  - munge
+  - libmunge-dev

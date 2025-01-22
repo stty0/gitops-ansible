@@ -1,0 +1,5 @@
+---
+- name: Configure the slurm login node
+  hosts: login_node_group
+  roles:
+  - role: slurm

@@ -1,0 +1,198 @@
+---
+# tasks file for slurm
+- block:
+  - name: Create OS group for slurm
+    group:
+      name: "{{ OS_user.group }}"
+      gid: "{{ OS_user.gid }}"
+      state: present
+
+  - name: Create OS User for slurm
+    user:
+      name: "{{ OS_user.user }}"
+      shell: "{{ OS_user.shell }}"
+      home: "{{ OS_user.home_dir }}"
+      uid: "{{ OS_user.uid }}"
+      group: "{{ OS_user.group }}"
+      state: present
+
+- block:
+  - name: Install required packages for slurm
+    apt:
+      pkg: "{{ item }}"
+      state: present
+    with_items:
+      - "{{ required_packages_for_slurm }}"
+
+- block:
+  - name: Copy slurm packages
+    copy:
+      src: "slurm.tar.gz"
+      dest: "/tmp/"
+
+  - name: Unarchive slurm packages
+    unarchive:
+      src: "/tmp/slurm.tar.gz"
+      dest: "/tmp/"
+      remote_src: yes
+
+- block:
+  - name: Create directories needed for slurm
+    file:
+      path: "{{ item }}"
+      state: directory
+      recurse: yes
+      owner: "{{ OS_user.user }}"
+      group: "{{ OS_user.group }}"
+      mode: "755"
+    with_items:
+      - "{{ slurm_directories }}"
+
+  - name: Install slurm packages
+    # shell: "dpkg -i /tmp/controller/{{item}}"
+    apt:
+      deb: "/tmp/slurm/{{ item }}"
+    with_items:
+      - "{{ slurm_packages }}"
+
+- block:
+  - name: Find out information about nodes
+    shell: "slurmd -C | awk 'NR==1 {print $2, $3, $4, $5, $6}'"
+    delegate_to: "{{ primary_worker }}"
+    run_once: true
+    register: cmd_output
+
+  - name: Create slurm.conf file
+    template:
+      src: "templates/slurm.conf.j2"
+      dest: "/etc/slurm/slurm.conf"
+      owner: slurm
+      group: slurm
+      mode: "400"
+    vars:
+      cmd_output_var: "{{ cmd_output.stdout }}"
+
+- block:
+  - name: Ensure apt cache is up to date
+    apt:
+      update_cache: yes
+      cache_valid_time: 600  # 10 minutes
+
+  - name: Determine system architecture using dpkg
+    command: dpkg --print-architecture
+    register: dpkg_arch
+    changed_when: false
+
+  - name: Set arch fact from dpkg output
+    set_fact:
+      arch: "{{ dpkg_arch.stdout }}"
+
+  - name: Download enroot package
+    get_url:
+      url: "{{ enroot_release_url }}/enroot_{{ enroot_version }}_{{ arch }}.deb"
+      dest: "{{ download_dest }}/enroot_{{ enroot_version }}_{{ arch }}.deb"
+      mode: '0644'
+    register: enroot_download
+
+  - name: Download enroot+caps package (optional)
+    get_url:
+      url: "{{ enroot_release_url }}/enroot+caps_{{ enroot_version }}_{{ arch }}.deb"
+      dest: "{{ download_dest }}/enroot+caps_{{ enroot_version }}_{{ arch }}.deb"
+      mode: '0644'
+    when: install_enroot_caps
+    register: enroot_caps_download
+
+  - name: Install enroot package
+    apt:
+      deb: "{{ download_dest }}/enroot_{{ enroot_version }}_{{ arch }}.deb"
+      state: present
+    when: enroot_download is succeeded
+
+  - name: Install enroot+caps package (optional)
+    apt:
+      deb: "{{ download_dest }}/enroot+caps_{{ enroot_version }}_{{ arch }}.deb"
+      state: present
+    when: install_enroot_caps and enroot_caps_download is succeeded
+
+  - name: Clean up downloaded .deb files
+    file:
+      path: "{{ item }}"
+      state: absent
+    loop:
+      - "{{ download_dest }}/enroot_{{ enroot_version }}_{{ arch }}.deb"
+      - "{{ download_dest }}/enroot+caps_{{ enroot_version }}_{{ arch }}.deb"
+    when: cleanup_debs | default(true)
+
+- block:
+  - name: Install required packages
+    apt:
+      name:
+        - git
+        - build-essential
+        - make
+        - pkg-config
+      state: present
+      update_cache: yes
+
+  - name: Clone Pyxis repository
+    git:
+      repo: "{{ pyxis_repo_url }}"
+      dest: "{{ pyxis_install_dir }}"
+      recursive: yes
+      clone: yes
+
+  - name: Create install directory
+    file:
+      path: "{{ pyxis_install_dir }}"
+      state: directory
+      # owner: "{{ pyxis_user }}"
+      # group: "{{ pyxis_group }}"
+      mode: '0755'
+
+  - name: Build and install Pyxis
+    command: make install
+    args:
+      chdir: "{{ pyxis_install_dir }}"
+    become: yes
+
+  - name: Ensure plugstack.conf.d directory exists
+    file:
+      path: "{{ plugstack_conf_dir }}"
+      state: directory
+      owner: slurm
+      group: slurm
+      mode: '0755'
+
+  - name: Ensure Pyxis configuration file exists
+    file:
+      src: "{{ pyxis_conf_source }}"
+      dest: "{{ pyxis_conf_link }}"
+      state: link
+      owner: slurm
+      group: slurm
+      # mode: "{{ pyxis_conf_link_mode }}"
+
+  - name: Create config file
+    template:
+      src: "templates/plugstack.conf.j2"
+      dest: "/etc/slurm/plugstack.conf"
+
+  - name: Clean up Pyxis repository clone
+    file:
+      path: "{{ pyxis_install_dir }}"
+      state: absent
+    when: cleanup_clone
+
+- block:
+  - name: Restart slurm daemons
+    service: 
+      name: "{{ item.name }}"
+      state: restarted
+      enabled: yes
+    with_items:
+      - "{{ slurm_daemons }}"
+  - wait_for:
+      port: "{{ item.port }}"
+      state: present
+    with_items:
+      - "{{ slurm_daemons }}"

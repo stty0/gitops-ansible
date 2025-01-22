@@ -1,0 +1,19 @@
+---
+# defaults file for slurm
+enroot_version: "3.5.0-1"
+enroot_release_url: "https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version | regex_replace('-1$', '') }}"
+install_enroot_caps: true
+download_dest: "/tmp"
+cleanup_debs: true
+
+pyxis_version: "latest"
+pyxis_repo_url: "https://github.com/NVIDIA/pyxis.git"
+pyxis_install_dir: "/opt/pyxis"
+pyxis_build_dir: "{{ pyxis_install_dir }}/pyxis"
+
+pyxis_conf_source: "/usr/local/share/pyxis/pyxis.conf"
+pyxis_conf_link: "/etc/slurm/plugstack.conf.d/pyxis.conf"
+
+cleanup_clone: true
+
+plugstack_conf_dir: "/etc/slurm/plugstack.conf.d"

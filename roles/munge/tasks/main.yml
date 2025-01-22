@@ -1,0 +1,60 @@
+---
+# tasks file for munge
+- block:
+  - name: Create an OS group for munge
+    group:
+      name: "{{ OS_user.group }}"
+      gid: "{{ OS_user.gid }}"
+      state: present
+    
+  - name: Create an OS User for munge
+    user:
+      name: "{{ OS_user.user }}"
+      shell: "{{ OS_user.shell }}"
+      home: "{{ OS_user.home_dir }}"
+      uid: "{{ OS_user.uid }}"
+      group: "{{ OS_user.group }}"
+      state: present
+
+- block:
+  - name: Install munge package
+    apt:
+      pkg: "{{ item }}"
+      state: present
+    with_items:
+      - "{{ munge_packages }}"
+
+- block:
+  - name: Create key file
+    command: "dd if=/dev/random bs=1 count=1024 of=/etc/munge/munge.key"
+    run_once: true
+    delegate_to: "{{ primary_controller }}"
+
+  - name: Copy key file from controller node
+    fetch:
+      src: "/etc/munge/munge.key"
+      dest: "/tmp/munge.key"
+      flat: yes
+    run_once: true
+    delegate_to: "{{ primary_controller }}"
+
+  - name: Copy key file to all nodes
+    copy:
+      src: "/tmp/munge.key"
+      dest: "/etc/munge/munge.key"
+      owner: "{{ OS_user.user }}"
+      group: "{{ OS_user.group }}"
+      mode: "400"
+ 
+  - name: Clean up key file from localhost
+    become: false
+    file:
+      path: "/tmp/munge.key"
+      state: absent
+    delegate_to: localhost
+
+  - name: restart munge
+    service:
+      name: munge
+      state: restarted
+      enabled: yes

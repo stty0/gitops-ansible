@@ -1,0 +1,7 @@
+---
+# handlers file for passwordless
+- name: restart sshd
+  service:
+    name: sshd
+    state: restarted
+- wait_for: timeout=3 

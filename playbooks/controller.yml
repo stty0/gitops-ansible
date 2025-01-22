@@ -1,0 +1,5 @@
+---
+- name: Configure the slurm controller node
+  hosts: controller_node_group
+  roles:
+  - role: slurm

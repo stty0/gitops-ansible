@@ -1,0 +1,10 @@
+---
+# vars file for slurm
+OS_user: {
+  group: slurm,
+  user: slurm,
+  home_dir: /var/lib/slurm,
+  shell: /bin/bash,
+  uid: 992,
+  gid: 992
+}

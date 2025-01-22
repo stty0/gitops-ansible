@@ -1,0 +1,56 @@
+cluster_name: ml-cluster
+
+slurm_log_dir: {
+  path: /var/log/slurm,
+  owner: slurm,
+  group: slurm
+}
+
+slurm_spool_dir: {
+  path: /var/spool/slurm/slurmd,
+  owner: slurm,
+  group: slurm
+}
+
+slurm_state_dir: {
+  path: /var/spool/slurm/slurmctld,
+  owner: slurm,
+  group: slurm
+}
+
+
+required_packages_for_slurm:
+  - build-essential
+  - pkg-config
+  - libmunge-dev
+  - freeipmi
+  - libfreeipmi-dev
+  - libibmad-dev
+  - libibumad-dev
+  - libhdf5-dev
+  # - mysql-server
+  - libmysqlclient-dev
+  - libjwt-dev
+  - man2html
+  - lua5.3
+  - liblua5.3-dev
+  - libpam0g-dev
+  - libpmix2
+  - libpmix-dev
+  - libreadline-dev
+  - libhttp-parser-dev
+  - libjson-c-dev
+  - libyaml-dev
+  - libgtk2.0-dev
+  - curl
+  - libnuma-dev
+  - libhwloc-dev
+  - libbpf-dev
+  - dbus
+  - libdbus-1-dev
+
+all_nodes: "{{ groups['all'] }}"
+primary_controller: "{{ groups['controller_node_group'][0] }}"
+all_workers: "{{ groups['worker_node_group'] }}"
+primary_worker: "{{ groups['worker_node_group'][0] }}"
+

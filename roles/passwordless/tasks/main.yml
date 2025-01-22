@@ -1,0 +1,88 @@
+---
+# tasks file for passwordless
+- block:
+  - name: Add alias to /etc/hosts
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ hostvars[item].ansible_host }}\t{{ hostvars[item].ansible_hostname | default(item) }}"
+    with_items: 
+      - "{{ all_nodes }}"
+
+- block:
+  - name: Modify /etc/ssh/sshd_config(1/3)
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '(^UseDNS\s+|#UseDNS\s+)'
+      line: UseDNS yes
+
+  - name: Modify /etc/ssh/sshd_config(2/3)
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '(^HostbasedAuthentication\s+|#HostbasedAuthentication\s+)'
+      line: HostbasedAuthentication yes
+
+  - name: Modify /etc/ssh/sshd_config(3/3)
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '(^IgnoreRhosts\s+|#IgnoreRhosts\s+)'
+      line: IgnoreRhosts no
+
+  - name: Modify /etc/ssh/ssh_config(1/2)
+    lineinfile:
+      dest: /etc/ssh/ssh_config
+      regexp: '(^EnableSSHKeySign\s+|#EnableSSHKeySign\s+)'
+      insertafter: '^Host \*'
+      line: "\tEnableSSHKeySign yes"
+
+  - name: Modify /etc/ssh/ssh_config(1/2)
+    lineinfile:
+      dest: /etc/ssh/ssh_config
+      regexp: '(^HostbasedAuthentication\s+|#HostbasedAuthentication\s+)'
+      insertafter: '^Host \*'
+      line: "\tHostbasedAuthentication yes"
+
+- block:
+  - name: Add mappings to /etc/hosts.equiv
+    lineinfile:
+      path: /etc/hosts.equiv
+      create: yes
+      line: "{{ hostvars[item].ansible_hostname | default(item) }}"
+      mode: '0600'
+    with_items: 
+      - "{{ all_nodes }}"
+
+  - name: Add mappings to /root/.shosts
+    lineinfile:
+      path: /root/.shosts
+      create: yes
+      line: "{{ hostvars[item].ansible_hostname | default(item) }}"
+      mode: '0600'
+    with_items:
+      - "{{ all_nodes }}"
+
+  - name: Add mappings to /etc/skel/.shosts
+    lineinfile:
+      path: /etc/skel/.shosts
+      create: yes
+      line: "{{ hostvars[item].ansible_hostname | default(item) }}"
+      mode: '0600'
+    with_items: 
+      - "{{ all_nodes }}"
+
+- block:
+  - name: Scan SSH public key
+    command: "/usr/bin/ssh-keyscan -t rsa {{ hostvars[item].ansible_hostname | default(item) }}"
+    register: result_keyscan
+    delegate_to: "{{ item }}"
+    run_once: true
+    with_items:
+      - "{{ all_nodes }}"
+
+  - name: Add public key to /etc/ssh/ssh_known_hosts2
+    lineinfile:
+      path: /etc/ssh/ssh_known_hosts2
+      create: yes
+      line: "{{ item.stdout_lines[0] }}"
+    with_items: "{{ result_keyscan.results }}"
+    notify:
+      - restart sshd
