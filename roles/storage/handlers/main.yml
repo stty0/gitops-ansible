@@ -1,2 +1,4 @@
 ---
 # handlers file for storage
+- name: Mount NFS Shares
+  command: mount -a

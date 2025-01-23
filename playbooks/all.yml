@@ -2,6 +2,7 @@
   hosts: controller_node_group, worker_node_group, login_node_group
   roles:
     - role: passwordless
+    - role: ntp
     - role: munge
     - role: slurm
 

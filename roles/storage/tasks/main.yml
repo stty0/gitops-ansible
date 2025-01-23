@@ -1,2 +1,32 @@
 ---
 # tasks file for storage
+- name: Update APT package index
+  apt:
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: Install nfs-common package
+  apt:
+    name: nfs-common
+    state: present
+
+- name: Create mount point directory
+  file:
+    path: "{{ mount_point }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Add NFS mount to /etc/fstab
+  template:
+    src: fstab.nfs.j2
+    dest: /etc/fstab
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Mount NFS Shares
+
+- name: Mount all filesystems in fstab
+  command: mount -a
+  when: mount_all

@@ -1,2 +1,4 @@
 ---
 # defaults file for ntp
+ntp_pool: "pool.ntp.org"
+ntp_restrict: "default kod nomodify notrap nopeer noquery limited"

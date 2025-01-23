@@ -1,2 +1,4 @@
 ---
 # vars file for ntp
+ntp_service_name: ntp
+ntp_config_path: /etc/ntp.conf

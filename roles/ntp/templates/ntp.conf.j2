@@ -1,0 +1,13 @@
+# roles/ntp_install/templates/ntp.conf.j2
+
+driftfile /var/lib/ntp/ntp.drift
+
+# NTP 서버 풀 설정
+pool {{ ntp_pool }} iburst
+
+# 기본 접근 제어 설정
+restrict default {{ ntp_restrict }}
+
+# 로컬 접근 허용
+restrict 127.0.0.1
+restrict ::1

@@ -1,2 +1,28 @@
 ---
 # tasks file for ntp
+- name: Update APT package index
+  apt:
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: Install NTP package
+  apt:
+    name: ntp
+    state: present
+    update_cache: yes
+  notify: Restart NTP
+
+- name: Deploy NTP configuration file
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart NTP
+
+- name: Ensure NTP service is started and enabled
+  systemd:
+    name: ntp
+    state: started
+    enabled: yes

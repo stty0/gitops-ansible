@@ -1,2 +1,6 @@
 ---
 # handlers file for ntp
+- name: Restart NTP
+  systemd:
+    name: ntp
+    state: restarted
