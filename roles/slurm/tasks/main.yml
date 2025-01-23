@@ -23,7 +23,6 @@
       update_cache: yes
       cache_valid_time: 86400
 
-- block:
   - name: Install required packages for slurm
     apt:
       name: "{{ required_packages_for_slurm }}"
