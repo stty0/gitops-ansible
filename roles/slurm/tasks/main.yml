@@ -180,6 +180,9 @@
     template:
       src: "templates/plugstack.conf.j2"
       dest: "/etc/slurm/plugstack.conf"
+      owner: slurm
+      group: slurm
+      mode: "0644"
 
   - name: Clean up Pyxis repository clone
     file:
