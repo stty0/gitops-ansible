@@ -3,6 +3,6 @@
   roles:
     - role: passwordless
     - role: munge
-- import_playbook: worker.yml
 - import_playbook: controller.yml
+- import_playbook: worker.yml
 - import_playbook: login.yml
