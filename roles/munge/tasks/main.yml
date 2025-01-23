@@ -17,6 +17,12 @@
       state: present
 
 - block:
+  - name: Update APT package index
+    apt:
+      upgrade: yes
+      update_cache: yes
+      cache_valid_time: 86400
+
   - name: Install munge package
     apt:
       name: "{{ munge_packages }}"
