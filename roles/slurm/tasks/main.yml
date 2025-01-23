@@ -73,7 +73,7 @@
       dest: "/etc/slurm/slurm.conf"
       owner: slurm
       group: slurm
-      mode: "400"
+      mode: "0644"
     vars:
       cmd_output_var: "{{ cmd_output.stdout }}"
 
