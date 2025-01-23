@@ -1,0 +1,3 @@
+# roles/docker_install/templates/docker.list.j2
+
+deb [arch={{ docker_arch }} signed-by={{ docker_keyring_path }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release | lower }} stable

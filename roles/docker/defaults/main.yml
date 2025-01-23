@@ -1,2 +1,12 @@
 ---
 # defaults file for docker
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+docker_key_url: "https://download.docker.com/linux/ubuntu/gpg"
+docker_repo_template: "docker.list.j2"
+docker_repo_path: "/etc/apt/sources.list.d/docker.list"

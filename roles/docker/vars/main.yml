@@ -1,2 +1,4 @@
 ---
 # vars file for docker
+docker_service_name: docker
+docker_keyring_path: /etc/apt/keyrings/docker.asc

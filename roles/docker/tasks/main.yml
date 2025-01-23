@@ -1,2 +1,65 @@
 ---
 # tasks file for docker
+- name: Update APT package index
+  apt:
+    update_cache: yes
+
+- name: Install prerequisites
+  apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: yes
+
+- name: Create directory for apt keyrings
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Docker's official GPG key
+  get_url:
+    url: "{{ docker_key_url }}"
+    dest: "{{ docker_keyring_path }}"
+    mode: '0644'
+
+- name: Ensure Docker GPG key is readable
+  file:
+    path: "{{ docker_keyring_path }}"
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Set Docker architecture
+  set_fact:
+    docker_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+
+- name: Add Docker APT repository
+  template:
+    src: "{{ docker_repo_template }}"
+    dest: "{{ docker_repo_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Update APT package index after adding Docker repo
+  apt:
+    update_cache: yes
+
+- name: Install Docker packages
+  apt:
+    name: "{{ docker_packages }}"
+    state: present
+
+- name: Ensure Docker service is started and enabled
+  systemd:
+    name: "{{ docker_service_name }}"
+    state: started
+    enabled: yes
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes

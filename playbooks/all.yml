@@ -1,6 +1,11 @@
-- name: Install prerequisites for all
+- name: Slurm cluster provisioning
   hosts: controller_node_group, worker_node_group, login_node_group
   roles:
     - role: passwordless
     - role: munge
     - role: slurm
+
+- name: Install docker on the login node
+  hosts: login_node_group
+  roles:
+    - role: docker
