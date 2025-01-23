@@ -17,7 +17,7 @@
       state: present
 
 - block:
-  - name: apt-get update
+  - name: Update APT package index
     apt:
       upgrade: yes
       update_cache: yes
