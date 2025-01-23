@@ -26,10 +26,8 @@
 - block:
   - name: Install required packages for slurm
     apt:
-      pkg: "{{ item }}"
+      name: "{{ required_packages_for_slurm }}"
       state: present
-    with_items:
-      - "{{ required_packages_for_slurm }}"
 
 - block:
   - name: Copy slurm packages

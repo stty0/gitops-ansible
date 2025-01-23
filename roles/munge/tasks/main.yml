@@ -19,10 +19,8 @@
 - block:
   - name: Install munge package
     apt:
-      pkg: "{{ item }}"
+      name: "{{ munge_packages }}"
       state: present
-    with_items:
-      - "{{ munge_packages }}"
 
 - block:
   - name: Create key file
