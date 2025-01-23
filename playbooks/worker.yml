@@ -1,5 +1,0 @@
----
-- name: Configure the slurm worker nodes
-  hosts: worker_node_group
-  roles:
-  - role: slurm
