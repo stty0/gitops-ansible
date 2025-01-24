@@ -9,24 +9,32 @@
   apt:
     name: nfs-common
     state: present
+    update_cache: yes
 
-- name: Create mount point directory
+- name: Create mount point directories
   file:
-    path: "{{ mount_point }}"
+    path: "{{ item.mount_point }}"
     state: directory
     owner: root
     group: root
     mode: '0755'
+  loop: "{{ shared_storage }}"
 
-- name: Add NFS mount to /etc/fstab
-  template:
-    src: fstab.nfs.j2
-    dest: /etc/fstab
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Mount NFS Shares
+- name: Add NFS mounts to /etc/fstab
+  mount:
+    name: "{{ item.mount_point }}"
+    src: "{{ item.nfs_server }}"
+    fstype: nfs
+    opts: defaults
+    state: present
+  loop: "{{ shared_storage }}"
 
-- name: Mount all filesystems in fstab
-  command: mount -a
-  when: mount_all
+- name: Mount all NFS shares
+  mount:
+    src: "{{ item.nfs_server }}"
+    path: "{{ item.mount_point }}"
+    opts: rw,sync,hard
+    state: mounted
+    fstype: nfs
+  loop: "{{ shared_storage }}"
+  # notify: Move User's home directory

@@ -10,3 +10,8 @@
   hosts: login_node_group
   roles:
     - role: docker
+
+- name: Mount Shared storage
+  hosts: all
+  roles:
+    - role: storage

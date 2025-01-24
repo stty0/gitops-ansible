@@ -1,23 +1,26 @@
 cluster_name: ml-cluster
 
-slurm_log_dir: {
-  path: /var/log/slurm,
-  owner: slurm,
-  group: slurm
-}
+shared_storage: [
+  { "nfs_server": "198.19.192.41:/home_iyknfs", "mount_point": "/home01" }
+]
 
-slurm_spool_dir: {
-  path: /var/spool/slurm/slurmd,
-  owner: slurm,
-  group: slurm
+slurm: {
+  slurm_log_dir: {
+    path: /var/log/slurm,
+    owner: slurm,
+    group: slurm
+  },
+  slurm_spool_dir: {
+    path: /var/spool/slurm/slurmd,
+    owner: slurm,
+    group: slurm
+  },
+  slurm_state_dir: {
+    path: /var/spool/slurm/slurmctld,
+    owner: slurm,
+    group: slurm
+  }
 }
-
-slurm_state_dir: {
-  path: /var/spool/slurm/slurmctld,
-  owner: slurm,
-  group: slurm
-}
-
 
 required_packages_for_slurm:
   - build-essential

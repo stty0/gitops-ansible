@@ -1,4 +1,7 @@
 ---
 # handlers file for storage
-- name: Mount NFS Shares
-  command: mount -a
+# - name: Move User's home directory
+#   user:
+#     name: vmuser
+#     move_home: yes
+#     home: /home01/vmuser

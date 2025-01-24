@@ -12,8 +12,8 @@ slurm_packages:
   - slurm-smd-openlava_24.11.0-0rc2_all.deb
 
 slurm_directories:
-  - "{{ slurm_state_dir.path }}"
-  - "{{ slurm_log_dir.path }}"
+  - "{{ slurm.slurm_state_dir.path }}"
+  - "{{ slurm.slurm_log_dir.path }}"
 
 slurm_daemons: [
   {
