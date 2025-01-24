@@ -3,7 +3,7 @@
   roles:
     - role: storage
     - role: passwordless
-    - role: ntp
+    # - role: ntp
     - role: munge
     - role: slurm
 
