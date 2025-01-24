@@ -1,6 +1,7 @@
 - name: Slurm cluster provisioning
   hosts: controller_node_group, worker_node_group, login_node_group
   roles:
+    - role: storage
     - role: passwordless
     - role: ntp
     - role: munge
@@ -10,8 +11,3 @@
   hosts: login_node_group
   roles:
     - role: docker
-
-- name: Mount Shared storage
-  hosts: all
-  roles:
-    - role: storage
