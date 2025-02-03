@@ -1,7 +1,7 @@
 - name: Configure Slurm cluster
   hosts: controller_node_group, worker_node_group, login_node_group
   roles:
-    - role: storage
+    # - role: storage
     - role: passwordless
     # - role: ntp
     - role: munge
