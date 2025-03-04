@@ -1,2 +1,32 @@
 ---
 # tasks file for nvidia
+- block:
+  - name: Download CUDA installer with wget
+    shell: "wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda_12.2.0_535.54.03_linux.run"
+    args:
+      chdir: /tmp
+
+  - name: Run CUDA installer silently (toolkit only)
+    shell: "sudo sh /tmp/cuda_12.2.0_535.54.03_linux.run --silent --toolkit"
+
+  - name: Create /etc/profile.d/cuda.sh with PATH and LD_LIBRARY_PATH settings
+    copy:
+      dest: /etc/profile.d/cuda.sh
+      content: |
+        #!/bin/bash
+        export PATH="/usr/local/cuda-12.2/bin:$PATH"
+        export LD_LIBRARY_PATH="/usr/local/cuda-12.2/lib64:$LD_LIBRARY_PATH"
+      owner: root
+      group: root
+      mode: '0755'
+
+  - name: Add CUDA library path to ld.so configuration
+    copy:
+      dest: /etc/ld.so.conf.d/cuda.conf
+      content: "/usr/local/cuda-12.2/lib64\n"
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Update the shared library cache with ldconfig
+    command: ldconfig
