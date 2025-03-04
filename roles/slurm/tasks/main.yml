@@ -77,7 +77,7 @@
 
 - block:
   - name: Find out information about GPU device file
-    shell: gpu_count=$(nvidia-smi topo -m | grep '^GPU[0-9]' | wc -l); [ "$gpu_count" -eq 1 ] && echo "0" || echo "0-$((gpu_count - 1))"
+    shell: "gpu_count=$(nvidia-smi topo -m | grep '^GPU[0-9]' | wc -l); [ '$gpu_count' -eq 1 ] && echo '0' || echo '0-$((gpu_count - 1))'"
     delegate_to: "{{ primary_worker }}"
     run_once: true
     register: gpu_count
