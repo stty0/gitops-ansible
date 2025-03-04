@@ -76,6 +76,30 @@
       cmd_output_var: "{{ cmd_output.stdout }}"
 
 - block:
+  - name: Find out information about GPU device file
+    shell: gpu_count=$(nvidia-smi topo -m | grep '^GPU[0-9]' | wc -l); [ "$gpu_count" -eq 1 ] && echo "0" || echo "0-$((gpu_count - 1))"
+    delegate_to: "{{ primary_worker }}"
+    run_once: true
+    register: gpu_count
+
+  - name: Find out information about CPU Affinity
+    shell: "nvidia-smi topo -m | grep '^GPU0' | awk '{print $6}'"
+    delegate_to: "{{ primary_worker }}"
+    run_once: true
+    register: cpu_affinity
+
+  - name: Create gres.conf file
+    template:
+      src: "templates/gres.conf.j2"
+      dest: "/etc/slurm/gres.conf"
+      owner: slurm
+      group: slurm
+      mode: "0644"
+    vars:
+      gpu_count_var: "{{ gpu_count.stdout }}"
+      cpu_affinity_var: "{{ cpu_affinity.stdout }}"
+
+- block:
   - name: Ensure apt cache is up to date
     apt:
       update_cache: yes

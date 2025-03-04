@@ -1,0 +1,8 @@
+##################################################################
+# Slurm's Generic Resource (GRES) configuration file
+# Use NVML to gather GPU configuration information
+# for all nodes except one
+##################################################################
+AutoDetect=nvml
+NodeName=worker[001-{{ '%03d' % all_workers | length }}] Name=gpu File=/dev/nvidia[{{ gpu_count }}] COREs=[{{ cpu_affinity }}]
+EOL
