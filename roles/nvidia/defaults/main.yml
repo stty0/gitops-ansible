@@ -1,2 +1,7 @@
 ---
 # defaults file for nvidia
+cuda_lib_version: "12.2.0"
+nvidia_drvier_version: "535.54.03"
+cuda_repo_url: "https://developer.download.nvidia.com/compute/cuda/{{ cuda_lib_version }}/local_installers"
+cuda_lib_file: "cuda_{{ cuda_lib_version }}_{{ nvidia_drvier_version }}_linux.run"
+download_dest: "/tmp"

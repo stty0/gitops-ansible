@@ -1,13 +1,22 @@
 ---
 # tasks file for nvidia
 - block:
-  - name: Download CUDA installer with wget
-    shell: "wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda_12.2.0_535.54.03_linux.run"
-    args:
-      chdir: /tmp
+  # - name: Download CUDA installer with wget
+  #   shell: "wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda_12.2.0_535.54.03_linux.run"
+  #   args:
+  #     chdir: /tmp
+
+  - name: Download CUDA installer
+    get_url:
+      url: "{{ cuda_repo_url }}/{{ cuda_lib_file }}"
+      dest: "{{ download_dest }}/{{ cuda_lib_file }}"
+      mode: '0755'
+    # when: install_enroot_caps
+    register: cuda_lib_download
 
   - name: Run CUDA installer silently (toolkit only)
     shell: "sudo sh /tmp/cuda_12.2.0_535.54.03_linux.run --silent --toolkit"
+    when: cuda_lib_download
 
   - name: Create /etc/profile.d/cuda.sh with PATH and LD_LIBRARY_PATH settings
     copy:
@@ -30,3 +39,45 @@
 
   - name: Update the shared library cache with ldconfig
     command: ldconfig
+
+  - name: Download NVIDIA Container Toolkit GPG key
+    ansible.builtin.get_url:
+      url: "https://nvidia.github.io/libnvidia-container/gpgkey"
+      dest: "/tmp/nvidia-gpgkey"
+      mode: "0644"
+
+  - name: Convert GPG key to dearmored format
+    ansible.builtin.command: "gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg /tmp/nvidia-gpgkey"
+    args:
+      creates: "/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg"
+
+  - name: Download NVIDIA Container Toolkit repository list file
+    ansible.builtin.get_url:
+      url: "https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list"
+      dest: "/tmp/nvidia-container-toolkit.list"
+      mode: "0644"
+
+  - name: Modify repository list with signed-by option using sed
+    ansible.builtin.command: >
+      sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g'
+      /tmp/nvidia-container-toolkit.list
+    register: repo_list_modified
+
+  - name: Write modified repository list to /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    ansible.builtin.copy:
+      content: "{{ repo_list_modified.stdout }}"
+      dest: "/etc/apt/sources.list.d/nvidia-container-toolkit.list"
+      owner: root
+      group: root
+      mode: "0644"
+
+  - name: Update apt cache
+    ansible.builtin.apt:
+      update_cache: yes
+
+  - name: Install NVIDIA Container Toolkit
+    ansible.builtin.apt:
+      name: nvidia-container-toolkit
+      state: present
+    environment:
+      DEBIAN_FRONTEND: noninteractive
