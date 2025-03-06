@@ -150,6 +150,13 @@
       - "{{ download_dest }}/enroot+caps_{{ enroot_version }}_{{ arch }}.deb"
     when: cleanup_debs | default(true)
 
+  - name: Set ENROOT_ROOTFS_WRITABLE to yes in enroot.conf
+    replace:
+      path: /etc/enroot/enroot.conf
+      regexp: '^#?ENROOT_ROOTFS_WRITABLE\s*no'
+      replace: 'ENROOT_ROOTFS_WRITABLE     yes'
+      backup: yes
+
 - block:
   - name: Install required packages
     apt:
