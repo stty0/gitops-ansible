@@ -4,5 +4,5 @@
 # for all nodes except one
 ##################################################################
 AutoDetect=nvml
-NodeName=worker[001-{{ '%03d' % all_workers | length }}] Name=gpu File=/dev/nvidia[{{ "0" if gpu_count_var == 0 else "0-" ~ (gpu_count_var|string) }}] COREs=[{{ cpu_affinity_var }}]
+NodeName=worker[001-{{ '%03d' % all_workers | length }}] Name=gpu File=/dev/nvidia[{{ "0" if gpu_count_var == 1 else "0-" ~ (gpu_count_var|string) }}] COREs=[{{ cpu_affinity_var }}]
 EOL
